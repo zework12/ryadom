@@ -37,6 +37,13 @@ public partial class App : Application
             _ = Tests.PillTest.RunAsync(e.Args[pillTest + 1]).ContinueWith(t => Dispatcher.BeginInvoke(() => Shutdown(t.IsFaulted ? 1 : 0)));
             return;
         }
+        var videoTest = Array.IndexOf(e.Args, "--videotest");
+        if (videoTest >= 0 && videoTest + 1 < e.Args.Length)
+        {
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            _ = Tests.VideoTest.RunAsync(e.Args[videoTest + 1]).ContinueWith(t => Dispatcher.BeginInvoke(() => Shutdown(t.IsFaulted ? 1 : 0)));
+            return;
+        }
         if (e.Args.Contains("--selftest"))
         {
             ShutdownMode = ShutdownMode.OnExplicitShutdown;

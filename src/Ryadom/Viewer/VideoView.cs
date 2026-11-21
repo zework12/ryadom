@@ -23,7 +23,14 @@ public sealed unsafe class VideoView : HwndHost
     private Thread? _thread;
     private readonly AutoResetEvent _wake = new(false);
     private volatile bool _stop;
-    private readonly WndProcDelegate _proc;
+    // Класс окна регистрируется один раз на процесс, поэтому процедура общая и живёт вечно,
+    // а сообщения раздаются нужному экземпляру по hwnd. Иначе второй сеанс шёл в процедуру
+    // первого VideoView, которую уже собрал сборщик мусора, — и программа падала.
+    private static readonly WndProcDelegate SharedProc = StaticWndProc;
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<IntPtr, VideoView> Views = new();
+
+    private static IntPtr StaticWndProc(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam) =>
+        Views.TryGetValue(hwnd, out var view) ? view.WndProc(hwnd, msg, wParam, lParam) : DefWindowProc(hwnd, msg, wParam, lParam);
 
     // Последний пришедший кадр (из потока движка) — рисующий забирает его.
     private readonly Lock _frameGate = new();
@@ -154,7 +161,6 @@ public sealed unsafe class VideoView : HwndHost
 
     public VideoView()
     {
-        _proc = WndProc;
         Focusable = true;
     }
 
@@ -188,7 +194,7 @@ public sealed unsafe class VideoView : HwndHost
         {
             Size = (uint)Marshal.SizeOf<WNDCLASSEX>(),
             Style = 0x20, // CS_OWNDC
-            WndProc = Marshal.GetFunctionPointerForDelegate(_proc),
+            WndProc = Marshal.GetFunctionPointerForDelegate(SharedProc),
             Instance = GetModuleHandle(null),
             Cursor = LoadCursor(IntPtr.Zero, 32512),
             ClassName = cls,
@@ -196,6 +202,7 @@ public sealed unsafe class VideoView : HwndHost
         RegisterClassEx(ref wc);
         _hwnd = CreateWindowEx(0, cls, "", WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 0, 0, 1, 1, parent.Handle, IntPtr.Zero, wc.Instance, IntPtr.Zero);
         if (_hwnd == IntPtr.Zero) throw new InvalidOperationException("Окно картинки не создалось");
+        Views[_hwnd] = this;
         _stop = false;
         _thread = new Thread(RenderLoop) { IsBackground = true, Name = "Картинка", Priority = ThreadPriority.AboveNormal };
         _thread.Start();
@@ -208,6 +215,7 @@ public sealed unsafe class VideoView : HwndHost
         _wake.Set();
         _thread?.Join(2000);
         DestroyWindow(hwnd.Handle);
+        Views.TryRemove(hwnd.Handle, out _);
         _hwnd = IntPtr.Zero;
     }
 
