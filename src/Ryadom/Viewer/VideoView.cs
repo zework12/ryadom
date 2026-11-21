@@ -161,6 +161,8 @@ public sealed unsafe class VideoView : HwndHost
     /// <summary>Кадр BGRA из сети. Копируется; рисует поток картинки.</summary>
     public void Push(byte* bgra, int width, int height, int stride)
     {
+        // Крошечный кадр-заглушка (LiveKit шлёт его, когда экран сняли с показа) — не затирать им картинку.
+        if (width < 16 || height < 16) return;
         lock (_frameGate)
         {
             var row = width * 4;

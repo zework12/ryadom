@@ -322,6 +322,15 @@ public sealed class ViewerController : IAsyncDisposable, IAgentTarget
 
     public byte[]? FramePng(double scale)
     {
+        // Окно свёрнуто и видео на паузе — включить на минуту и дождаться свежего кадра.
+        if (_sentPause)
+        {
+            _frameWantedUntil = DateTime.Now.AddMinutes(1);
+            var before = _video?.Rendered ?? 0;
+            _ui.Invoke(UpdateVideoDemand);
+            for (var i = 0; i < 200 && (_video?.Rendered ?? 0) <= before; i++) Thread.Sleep(100);
+        }
+        else _frameWantedUntil = DateTime.Now.AddMinutes(1);
         var video = _video;
         if (video is null) return null;
         var pixels = video.Snapshot(out var w, out var h);
@@ -469,8 +478,23 @@ public sealed class ViewerController : IAsyncDisposable, IAgentTarget
 
     private unsafe void OnFrame(byte* bgra, int width, int height, int stride) => _video?.Push(bgra, width, height, stride);
 
+    private bool _sentPause;
+    private DateTime _frameWantedUntil;
+
+    /// <summary>Нужна ли сейчас картинка: окно не свёрнуто, или Claude недавно просил снимок.</summary>
+    private void UpdateVideoDemand()
+    {
+        if (_room is null || _host is null) return;
+        var minimized = Application.Current.MainWindow?.WindowState == WindowState.Minimized;
+        var pause = minimized && DateTime.Now > _frameWantedUntil;
+        if (pause == _sentPause) return;
+        _sentPause = pause;
+        _room.SendControl(new Control { T = "video", Text = pause ? "pause" : "resume" }, _host);
+    }
+
     private void Stats()
     {
+        UpdateVideoDemand();
         if (_session is null || _video is null || _room is null) return;
         var rendered = _video.Rendered;
         _session.ActualFps = rendered - _lastRendered;
@@ -528,6 +552,7 @@ public sealed class ViewerController : IAsyncDisposable, IAgentTarget
 
     private async Task LeaveRoomAsync()
     {
+        _sentPause = false;
         _stats?.Stop();
         _stats = null;
         _agent?.Dispose();

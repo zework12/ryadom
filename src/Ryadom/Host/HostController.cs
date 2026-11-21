@@ -136,6 +136,7 @@ public sealed class HostController : IAsyncDisposable
     }
 
     private DateTime? _activeLeftAt;
+    private bool _videoPaused;
     private DateTime _lastViewerSeen = DateTime.Now;
 
     private async Task AllowAsync()
@@ -144,6 +145,7 @@ public sealed class HostController : IAsyncDisposable
         _active = _pending;
         _pending = null;
         _activeLeftAt = null;
+        _videoPaused = false;
         _lastViewerSeen = DateTime.Now;
         _since = DateTime.Now;
         _vm.DurationText = "00:00";
@@ -212,6 +214,15 @@ public sealed class HostController : IAsyncDisposable
             case "hello" when from == _pending || from == _active:
                 if (!string.IsNullOrWhiteSpace(message.Name)) _vm.ViewerName = message.Name;
                 ApplySettings(message, restart: false);
+                break;
+            case "video" when from == _active:
+                var pause = message.Text == "pause";
+                if (pause != _videoPaused)
+                {
+                    _videoPaused = pause;
+                    Log.Info(pause ? "Помощник свернул окно — экран не снимаем" : "Помощник смотрит — снова снимаем экран");
+                    _ = RestartCaptureAsync();
+                }
                 break;
             case "settings" when from == _active:
                 ApplySettings(message, restart: true);
@@ -289,6 +300,9 @@ public sealed class HostController : IAsyncDisposable
         {
             await StopCaptureCoreAsync();
             if (_room is null || _active is null) return;
+            // Окно помощника свёрнуто: картинка никому не нужна, а сжатие видео на слабом
+            // ноутбуке съедает процессор. Мышь, клавиши, agent-desktop и задачи работают и так.
+            if (_videoPaused) return;
             var monitors = Monitors.All();
             var index = Math.Clamp(_settings.Monitor ?? 0, 0, monitors.Count - 1);
             _monitor = monitors[index];
