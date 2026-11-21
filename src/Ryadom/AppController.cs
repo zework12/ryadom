@@ -39,7 +39,7 @@ public static class AppController
         if (!setup)
         {
             Net.Updater.EnsureInstalled();
-            _ = Task.Run(() => Net.Updater.CheckAsync(CancellationToken.None));
+            _ = UpdateLoopAsync();
         }
 
         StartPage.NeedHelpCommand.Bind(_ => NeedHelp());
@@ -122,6 +122,49 @@ public static class AppController
         vm.ConfirmUninstallCommand.Bind(_ => _ = Run("Удаляем…", Net.Installer.Uninstall, launch: false));
         vm.CloseCommand.Bind(_ => Application.Current.Shutdown());
         return vm;
+    }
+
+    /// <summary>
+    /// Проверять обновление при запуске и каждые полчаса. Если уже стоит версия
+    /// новее запущенной и сейчас открыт первый экран (никто не помогает и не
+    /// ждёт по коду) — тихо перезапуститься в новую. Во время помощи не трогаем.
+    /// </summary>
+    private static async Task UpdateLoopAsync()
+    {
+        while (true)
+        {
+            await Task.Run(() => Net.Updater.CheckAsync(CancellationToken.None));
+            for (var i = 0; i < 360; i++) // 30 мин, проверяя раз в 5 с, не пора ли переключиться
+            {
+                if (TrySwitchToNewer()) return;
+                await Task.Delay(TimeSpan.FromSeconds(5));
+            }
+        }
+    }
+
+    private static bool TrySwitchToNewer()
+    {
+        if (_main is null || !ReferenceEquals(_main.Page, StartPage) || StartPage.ConfirmingUninstall) return false;
+        if (Net.Updater.Newest() is not { } newest || newest.Version <= Net.Updater.Current) return false;
+        // Сверка по самому файлу: имя папки могло разойтись с версией внутри — тогда не перезапускаться по кругу.
+        if (!Version.TryParse(System.Diagnostics.FileVersionInfo.GetVersionInfo(newest.Exe).FileVersion, out var real) || real <= Net.Updater.Current) return false;
+        if (Tests.AutoDrive.Active) return false;
+        try
+        {
+            Log.Info($"Переключаюсь на версию {newest.Version}");
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(newest.Exe)
+            {
+                UseShellExecute = true,
+                WorkingDirectory = Path.GetDirectoryName(newest.Exe)!,
+            });
+            Application.Current.Shutdown();
+            return true;
+        }
+        catch (Exception error)
+        {
+            Log.Warn($"Не переключился на новую версию: {error.Message}");
+            return false;
+        }
     }
 
     private static void NeedHelp()

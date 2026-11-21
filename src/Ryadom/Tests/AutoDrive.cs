@@ -18,6 +18,8 @@ public static class AutoDrive
 {
     public static bool NoInput => Environment.GetEnvironmentVariable("RYADOM_NO_INPUT") == "1";
 
+    public static bool Active => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("RYADOM_AUTO"));
+
     public static void Attach(MainViewModel main, StartViewModel start, Window window)
     {
         var spec = Environment.GetEnvironmentVariable("RYADOM_AUTO");

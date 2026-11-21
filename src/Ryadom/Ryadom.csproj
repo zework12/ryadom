@@ -15,7 +15,7 @@
     <LangVersion>latest</LangVersion>
     <RootNamespace>Ryadom</RootNamespace>
     <AssemblyName>Ryadom</AssemblyName>
-    <Version>1.5.0</Version>
+    <Version>1.5.2</Version>
     <Product>Рядом</Product>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon Condition="Exists('Assets\icon.ico')">Assets\icon.ico</ApplicationIcon>
