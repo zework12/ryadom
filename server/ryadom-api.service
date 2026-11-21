@@ -1,0 +1,18 @@
+[Unit]
+Description=Ryadom: codes and LiveKit tokens for remote help
+After=network-online.target livekit.service
+
+[Service]
+ExecStart=/usr/bin/python3 /opt/ryadom/ryadom_api.py
+LoadCredential=lk:/etc/ryadom/lk
+DynamicUser=yes
+Restart=always
+RestartSec=2
+MemoryMax=64M
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

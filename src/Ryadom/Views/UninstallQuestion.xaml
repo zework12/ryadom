@@ -1,0 +1,39 @@
+<UserControl x:Class="Ryadom.Views.UninstallQuestion"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:t="clr-namespace:Ryadom.Theme"
+             x:Name="Self" Focusable="False" KeyboardNavigation.TabNavigation="Cycle">
+    <!-- Вопрос «Удалить „Рядом“?»: карточка поверх затемнённого экрана. Один и тот же на первом экране и в установщике. -->
+    <Grid>
+        <Border Background="{DynamicResource B.Scrim}" />
+        <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="480" Margin="24,0,24,24">
+            <Border CornerRadius="16" Background="{DynamicResource B.Surface}">
+                <Border.Effect>
+                    <DropShadowEffect Color="{DynamicResource C.Shadow}" BlurRadius="40" ShadowDepth="12" Direction="270" Opacity="0.22" />
+                </Border.Effect>
+            </Border>
+            <Border CornerRadius="16" Background="{DynamicResource B.Surface}" BorderBrush="{DynamicResource B.Border}" BorderThickness="1" Padding="32,32,32,28">
+                <StackPanel>
+                    <Border Width="56" Height="56" CornerRadius="28" Background="{DynamicResource B.DangerSoft}" HorizontalAlignment="Center">
+                        <t:IconView Data="{StaticResource Icon.Trash}" Width="26" Height="26" Stroke="2" Foreground="{DynamicResource B.DangerText}" />
+                    </Border>
+                    <TextBlock Text="Удалить «Рядом» с этого компьютера?" FontSize="22" FontWeight="SemiBold" LineHeight="30"
+                               TextWrapping="Wrap" TextAlignment="Center" Margin="0,20,0,0" />
+                    <TextBlock Text="Ярлыки и программа будут удалены. Скачать снова можно в любой момент."
+                               Style="{StaticResource Text.Sub}" Margin="0,8,0,0" />
+                    <Grid Margin="0,28,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="CancelButton" Style="{StaticResource Btn.Secondary}" Height="48" Content="Отмена" IsCancel="True"
+                                Command="{Binding CancelCommand, ElementName=Self}" />
+                        <Button Grid.Column="2" Style="{StaticResource Btn.Danger}" Height="48" Content="Удалить"
+                                Command="{Binding ConfirmCommand, ElementName=Self}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

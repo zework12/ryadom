@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- «Рядом» — удалённая помощь. Одно приложение на обе стороны:
+       «Мне нужна помощь» показывает свой экран и принимает мышь/клавиатуру,
+       «Я помогаю» смотрит и управляет. Видео и команды идут через LiveKit
+       на московском сервере (livekit_ffi.dll — движок WebRTC из LiveKit rust-sdks). -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Ryadom</RootNamespace>
+    <AssemblyName>Ryadom</AssemblyName>
+    <Version>1.5.0</Version>
+    <Product>Рядом</Product>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon Condition="Exists('Assets\icon.ico')">Assets\icon.ico</ApplicationIcon>
+    <SatelliteResourceLanguages>ru</SatelliteResourceLanguages>
+    <NoWarn>$(NoWarn);CS8981;CS0612</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- WinForms только ради System.Drawing в проверках; его имена не должны спорить с WPF. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\**\*.ico;Assets\**\*.png;Assets\**\*.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.32.1" />
+    <PackageReference Include="Vortice.Direct3D11" Version="3.8.3" />
+    <PackageReference Include="Vortice.D3DCompiler" Version="3.8.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- agent-desktop (Apache-2.0) для управления вторым ноутбуком по дереву доступности. -->
+    <EmbeddedResource Include="..\..\tools\agent-desktop\agent-desktop-win32-x64.exe" LogicalName="agent-desktop.exe" Condition="Exists('..\..\tools\agent-desktop\agent-desktop-win32-x64.exe')" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ryadom.Proto\Ryadom.Proto.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\tools\livekit-ffi\livekit_ffi.dll" Link="livekit_ffi.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

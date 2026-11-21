@@ -1,0 +1,57 @@
+<UserControl x:Class="Ryadom.Views.MainShell"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+             FontFamily="{StaticResource Font.Ui}" FontSize="15"
+             Foreground="{DynamicResource B.Text}"
+             UseLayoutRounding="True" SnapsToDevicePixels="True" Focusable="False">
+    <!-- Всё, что видно в главном окне: полоса заголовка и текущий экран.
+         Отдельно от окна, чтобы превью могло нарисовать это без показа окна. -->
+    <Border x:Name="Frame" Background="{DynamicResource B.Window}" BorderBrush="{DynamicResource B.Border}" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid x:Name="TitleBar" Height="40" Background="{DynamicResource B.TitleBar}">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0" IsHitTestVisible="False">
+                    <Image Source="{StaticResource Logo}" Width="18" Height="18" />
+                    <TextBlock Text="Рядом" FontSize="13" FontWeight="SemiBold" Margin="8,0,0,1" VerticalAlignment="Center"
+                               Foreground="{DynamicResource B.Text2}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource Btn.Caption}" shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                            Click="OnMinimize" ToolTip="Свернуть">
+                        <Path Data="M0,0.5 H10" Width="10" Height="1" StrokeThickness="1" SnapsToDevicePixels="True"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                    </Button>
+                    <Button Style="{StaticResource Btn.Caption}" shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                            Click="OnMaximize" x:Name="MaxButton" ToolTip="Развернуть">
+                        <Grid Width="10" Height="10">
+                            <Path x:Name="MaxGlyph" Data="M0.5,0.5 H9.5 V9.5 H0.5 Z" StrokeThickness="1" SnapsToDevicePixels="True"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <Path x:Name="RestoreGlyph" Visibility="Collapsed" Data="M2.5,2.5 V0.5 H9.5 V7.5 H7.5 M0.5,2.5 H7.5 V9.5 H0.5 Z" StrokeThickness="1" SnapsToDevicePixels="True"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                        </Grid>
+                    </Button>
+                    <Button Style="{StaticResource Btn.CaptionClose}" shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                            Click="OnClose" ToolTip="Закрыть">
+                        <Path Data="M0,0 L10,10 M10,0 L0,10" Width="10" Height="10" StrokeThickness="1"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- Низ первого экрана: версия и неприметное «Удалить программу». Лежит ПОД экраном, чтобы вопрос его затемнял. -->
+            <StackPanel x:Name="StartFooter" Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,10">
+                <TextBlock FontSize="12" Foreground="{DynamicResource B.Text3}" VerticalAlignment="Center"
+                           Text="{Binding Version, StringFormat='Версия {0}'}" />
+                <TextBlock Text="·" FontSize="12" Margin="6,0,0,0" Foreground="{DynamicResource B.Text3}" VerticalAlignment="Center" />
+                <Button x:Name="UninstallLink" Style="{StaticResource Btn.Link}" Content="Удалить программу" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <ContentControl Grid.Row="1" Content="{Binding Page}" Focusable="False" IsTabStop="False" />
+        </Grid>
+    </Border>
+</UserControl>

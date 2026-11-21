@@ -1,0 +1,1 @@
+agent-desktop 1.3.1 (vercel-labs/agent-desktop), Apache-2.0. Native Windows x64 binary copied from npm package; встроен в Ryadom.exe для управления вторым ноутбуком.

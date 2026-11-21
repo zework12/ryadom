@@ -1,0 +1,40 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Тёмная палитра: экран сеанса (панель вокруг чужой картинки). -->
+    <SolidColorBrush x:Key="B.Window" Color="#15171B" />
+    <SolidColorBrush x:Key="B.TitleBar" Color="#15171B" />
+    <SolidColorBrush x:Key="B.Surface" Color="#1D2026" />
+    <SolidColorBrush x:Key="B.SurfaceHover" Color="#23272E" />
+    <SolidColorBrush x:Key="B.SurfacePressed" Color="#1A1D22" />
+    <SolidColorBrush x:Key="B.Popup" Color="#23272E" />
+    <SolidColorBrush x:Key="B.Subtle" Color="#2B3038" />
+    <SolidColorBrush x:Key="B.SubtleHover" Color="#363C46" />
+    <SolidColorBrush x:Key="B.SubtlePressed" Color="#414854" />
+    <SolidColorBrush x:Key="B.Border" Color="#30353E" />
+    <SolidColorBrush x:Key="B.BorderStrong" Color="#535B68" />
+    <SolidColorBrush x:Key="B.Text" Color="#F1F3F6" />
+    <SolidColorBrush x:Key="B.Text2" Color="#B4BBC7" />
+    <SolidColorBrush x:Key="B.Text3" Color="#8A93A0" />
+    <SolidColorBrush x:Key="B.TextDisabled" Color="#5C6370" />
+    <SolidColorBrush x:Key="B.Disabled" Color="#23272E" />
+    <SolidColorBrush x:Key="B.Accent" Color="#25B899" />
+    <SolidColorBrush x:Key="B.AccentHover" Color="#31C8A9" />
+    <SolidColorBrush x:Key="B.AccentPressed" Color="#1FA588" />
+    <SolidColorBrush x:Key="B.OnAccent" Color="#04211B" />
+    <SolidColorBrush x:Key="B.AccentSoft" Color="#16352F" />
+    <SolidColorBrush x:Key="B.AccentText" Color="#42D4B4" />
+    <SolidColorBrush x:Key="B.Danger" Color="#E5534B" />
+    <SolidColorBrush x:Key="B.DangerHover" Color="#EC665F" />
+    <SolidColorBrush x:Key="B.DangerPressed" Color="#CF4740" />
+    <SolidColorBrush x:Key="B.OnDanger" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="B.DangerSoft" Color="#3D2322" />
+    <SolidColorBrush x:Key="B.DangerSoftHover" Color="#522B29" />
+    <SolidColorBrush x:Key="B.DangerSoftPressed" Color="#663230" />
+    <SolidColorBrush x:Key="B.DangerText" Color="#FF918A" />
+    <SolidColorBrush x:Key="B.WarnSoft" Color="#3D3113" />
+    <SolidColorBrush x:Key="B.WarnText" Color="#FFD27A" />
+    <SolidColorBrush x:Key="B.Good" Color="#2FCB8F" />
+    <SolidColorBrush x:Key="B.Poor" Color="#F0B132" />
+    <SolidColorBrush x:Key="B.Scrim" Color="#99000000" />
+    <Color x:Key="C.Shadow">#000000</Color>
+</ResourceDictionary>

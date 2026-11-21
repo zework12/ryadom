@@ -1,0 +1,10 @@
+bin/
+obj/
+dist/
+testrun/
+design/bin/
+design/obj/
+*.user
+.vs/
+# Чужие готовые программы — не в репозитории (см. README, «Сборка»).
+tools/agent-desktop/*.exe

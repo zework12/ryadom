@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Отдельная сборка только для оформления: окна, тема, превью.
+       Берёт модели экранов и WindowHelpers из основного проекта ссылками,
+       своё obj — чтобы сборки дизайна и ядра не мешали друг другу.
+       Запуск превью: bin\Debug\net10.0-windows\Ryadom.Design.exe /render-preview папка (перед render-preview два дефиса) -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Ryadom</RootNamespace>
+    <EnableDefaultPageItems>false</EnableDefaultPageItems>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <ApplicationManifest>..\src\Ryadom\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="DesignApp.xaml.cs" />
+    <ApplicationDefinition Include="DesignApp.xaml" />
+    <Compile Include="..\src\Ryadom\ViewModels\**\*.cs" Link="ViewModels\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\src\Ryadom\Interop\WindowHelpers.cs" Link="Interop\WindowHelpers.cs" />
+    <Compile Include="..\src\Ryadom\Views\**\*.cs" Link="Views\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\src\Ryadom\Preview\**\*.cs" Link="Preview\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\src\Ryadom\Theme\**\*.cs" Link="Theme\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Page Include="..\src\Ryadom\Views\**\*.xaml" Link="Views\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Page Include="..\src\Ryadom\Theme\**\*.xaml" Link="Theme\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Resource Include="..\src\Ryadom\Assets\**\*.ico;..\src\Ryadom\Assets\**\*.png;..\src\Ryadom\Assets\**\*.ttf" Link="Assets\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>
