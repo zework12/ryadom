@@ -99,6 +99,15 @@ public sealed class HostController : IAsyncDisposable
     private void OnJoined(string identity, string name)
     {
         if (_room is null || _disposed) return;
+        if (identity == _active)
+        {
+            // Помощник переподключился (у LiveKit полный перезапуск связи) — помощь продолжается.
+            _activeLeftAt = null;
+            _lastViewerSeen = DateTime.Now;
+            Log.Info("Помощник вернулся после обрыва");
+            _ = RestartCaptureAsync();
+            return;
+        }
         if (_active is not null || (_pending is not null && _pending != identity))
         {
             // Уже помогают — второго не пускаем.
@@ -118,14 +127,24 @@ public sealed class HostController : IAsyncDisposable
             _pending = null;
             if (_vm.State == HostState.Asking) _vm.State = HostState.Waiting;
         }
-        if (identity == _active) _ = StopHelpAsync(sendBye: false);
+        if (identity == _active)
+        {
+            // Не сразу: при перезапуске связи LiveKit человек «выходит» и тут же входит снова.
+            _activeLeftAt ??= DateTime.Now;
+            Log.Info("Помощник пропал — ждём 30 с");
+        }
     }
+
+    private DateTime? _activeLeftAt;
+    private DateTime _lastViewerSeen = DateTime.Now;
 
     private async Task AllowAsync()
     {
         if (_room is null || _pending is null) return;
         _active = _pending;
         _pending = null;
+        _activeLeftAt = null;
+        _lastViewerSeen = DateTime.Now;
         _since = DateTime.Now;
         _vm.DurationText = "00:00";
         _vm.State = HostState.Connected;
@@ -177,6 +196,7 @@ public sealed class HostController : IAsyncDisposable
         if (topic != Protocol.ControlTopic) return;
         var message = Protocol.DecodeControl(data);
         if (message is null) return;
+        if (from == _active) _lastViewerSeen = DateTime.Now;
         if (message.T == "ping")
         {
             _room?.SendControl(new Control { T = "pong", Id = message.Id }, from);
@@ -414,6 +434,15 @@ public sealed class HostController : IAsyncDisposable
 
     private void Tick()
     {
+        // Помощник ушёл и не вернулся, или от него давно ни звука (пинг раз в секунду) — помощь окончена.
+        if (_active is not null && ((_activeLeftAt is { } left && DateTime.Now - left > TimeSpan.FromSeconds(30))
+                                    || DateTime.Now - _lastViewerSeen > TimeSpan.FromSeconds(45)))
+        {
+            Log.Info("Помощник не вернулся — помощь закончена");
+            _activeLeftAt = null;
+            _ = StopHelpAsync(sendBye: false);
+            return;
+        }
         var span = DateTime.Now - _since;
         _vm.DurationText = span.TotalHours >= 1 ? span.ToString(@"h\:mm\:ss") : span.ToString(@"mm\:ss");
         // Плашка и рамка — поверх окон, которые сами лезут наверх.

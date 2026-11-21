@@ -77,7 +77,8 @@ public sealed class ViewerController : IAsyncDisposable, IAgentTarget
                 return;
             }
             room.DataReceived += OnData;
-            room.ParticipantLeft += identity => { if (identity == _host) _ui.BeginInvoke(() => _ = EndAsync("Человек закрыл «Рядом».")); };
+            room.ParticipantLeft += identity => { if (identity == _host) _ui.BeginInvoke(OnHostLeft); };
+            room.ParticipantJoined += (identity, _) => { if (identity == _host) _ui.BeginInvoke(OnHostBack); };
             room.LinkChanged += link => _ui.BeginInvoke(() => OnLink(link));
             room.QualityChanged += q => _ui.BeginInvoke(() => { if (_session is not null) _session.Quality = Map(q); });
             unsafe { room.FrameReceived += OnFrame; }
@@ -102,6 +103,29 @@ public sealed class ViewerController : IAsyncDisposable, IAgentTarget
         {
             _join.ConnectCommand.Refresh();
         }
+    }
+
+    private CancellationTokenSource? _hostGone;
+
+    /// <summary>Человек пропал из комнаты: обычно это перезапуск связи — ждём 30 с, прежде чем сдаться.</summary>
+    private async void OnHostLeft()
+    {
+        _hostGone?.Cancel();
+        var wait = _hostGone = new CancellationTokenSource();
+        if (_session is not null) _session.IsReconnecting = true;
+        Log.Info("Человек пропал — ждём 30 с");
+        try { await Task.Delay(TimeSpan.FromSeconds(30), wait.Token); }
+        catch (OperationCanceledException) { return; }
+        await EndAsync("Связь с человеком пропала. Подключитесь снова тем же кодом.");
+    }
+
+    private void OnHostBack()
+    {
+        if (_hostGone is null) return;
+        _hostGone.Cancel();
+        _hostGone = null;
+        if (_session is not null) _session.IsReconnecting = false;
+        Log.Info("Человек вернулся после обрыва");
     }
 
     private void Fail(string text)
